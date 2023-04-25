@@ -1,0 +1,48 @@
+//1
+
+select t3.userid, sum(t3.spend) as spending
+from
+(select t2.userid, t1.productid, t2.quantity, t1.price * t2.quantity as spend
+from Product t1
+inner join
+(select userid, productid, sum(quantity) as quantity
+from Sales
+group by userid, productid) t2
+on t1.productid = t2.productid) t3
+group by t3.userid;
+
+//2
+
+select t6.productid, t7.sum / t6.sumUnits as averageprice
+from 
+(select productid, sum(units) as sumUnits
+from UnitsSold
+group by productid) t6
+inner join 
+(select t5.productid, sum(t5.sumOfDates) as sum
+from 
+(select t4.productid, t4.purchase_date, t3.price * t4.units as sumOfDates
+from UnitsSold t4
+inner join
+(select t1.productid, t2.purchase_date, sum(price) as price
+from Prices t1
+inner join UnitsSold t2
+on t1.productid = t2.productid
+and t2.purchase_date between t1.startdate and t1.enddate
+group by t1.productid, t2.purchase_date) t3
+on t3.productid = t4.productid and t3.purchase_date = t4.purchase_date) t5
+group by t5.productid) t7
+on t6.productid = t7.productid;
+
+//3
+
+select t4.bus as busid, count(t4.passengerid) as passengerscnt
+from 
+(select t3.passengerid, min(t3.busid)as bus
+from 
+(select t1.passengerid, t2.busid
+from Passengers t1
+right join Buses t2
+on t1.arrivaltime <= t2.arrivaltime) t3
+group by t3.passengerid) t4
+group by t4.bus;
